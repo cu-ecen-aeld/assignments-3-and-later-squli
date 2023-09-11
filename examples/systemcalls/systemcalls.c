@@ -1,5 +1,15 @@
 #include "systemcalls.h"
 
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -9,14 +19,18 @@
 */
 bool do_system(const char *cmd)
 {
-
 /*
  * TODO  add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
+	int ret = system(cmd);
+	
+	if (ret == -1) {		
+		return false;
+	}
+	
     return true;
 }
 
@@ -36,6 +50,9 @@ bool do_system(const char *cmd)
 
 bool do_exec(int count, ...)
 {
+
+  pid_t child_pid;
+  int child_status;
     va_list args;
     va_start(args, count);
     char * command[count+1];
@@ -47,8 +64,24 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
 
+	bool res = false;
+
+    child_pid = fork();
+    if (child_pid != 0) {
+	    pid_t p;
+    	do {
+	p = wait(&child_status);   
+       } while (p != child_pid);
+       if (child_status == 0) {
+       		res = true;
+       	}
+    } else {
+       /* This is done by the child process. */
+       int res = execv(command[0], &command[0]);
+       exit(res);
+    }
 /*
  * TODO:
  *   Execute a system command by calling fork, execv(),
@@ -60,8 +93,7 @@ bool do_exec(int count, ...)
 */
 
     va_end(args);
-
-    return true;
+    return res;
 }
 
 /**
@@ -82,8 +114,28 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
 
+int kidpid;
+int child_status;
+int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+if (fd < 0) { perror("open"); abort(); }
+switch (kidpid = fork()) {
+  case -1: perror("fork"); abort();
+  case 0:
+    if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
+    close(fd);
+    execv(command[0], &command[0]); perror("execvp"); abort();
+  default:
+    close(fd);
+    pid_t tpid;
+    /* do whatever the parent wants to do. */
+           do {
+         tpid = wait(&child_status);
+         //if(tpid != kidpid) process_terminated(tpid);
+       } while(tpid != kidpid);
+    
+}
 
 /*
  * TODO
