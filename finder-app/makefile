@@ -12,11 +12,13 @@ endif
 INCLUDE =
 LIBS = -lm 
 
+all:
+	${CC} ${CFLAGS} ${INCLUDES} -o writer ${OBJS} ${LIBS}
 writer:
-	${CC} ${CFLAGS} ${INCLUDES} -o $@ ${OBJS} ${LIBS}
+	${CC} ${CFLAGS} ${INCLUDES} -o writer ${OBJS} ${LIBS}
 
 clean:
-	-rm -f *.o core *.core
+	-rm -f *.o core *.core writer
 
 .c.o:
 	${CC} ${CFLAGS} ${INCLUDES} -c $<
