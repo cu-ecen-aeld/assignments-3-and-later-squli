@@ -15,7 +15,7 @@ int writer(const char * full_path_to_file, const char * s) {
         return 1;
     }
     
-    int outputFd = open(full_path_to_file, O_WRONLY | O_CREAT);
+    int outputFd = open(full_path_to_file, O_WRONLY | O_CREAT, 0777);
     if(outputFd == -1) {
         syslog(LOG_ERR, "Cant open file: dir=%s\n", full_path_to_file);
         return 1;
